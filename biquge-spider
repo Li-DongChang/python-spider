@@ -1,0 +1,56 @@
+import requests
+from bs4 import BeautifulSoup as bs
+import time
+class bookDownloader:
+    def __init__(self):
+        self.headers = "headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36'}"
+        self.target = "https://www.biquge5200.cc/75_75584/"
+        self.name = "剑来"
+        self.names = []
+        self.urls = []
+        self.nums = 0
+
+    def getDownloadUrlList(self):
+        req = requests.get("https://www.biquge5200.cc/75_75584/")
+        bf = bs(req.text, "lxml")
+        temp = bf.find(text="《剑来》正文")
+        flag = True
+        href = None
+        while flag:
+            if href != None:
+                self.urls.append(href)
+                self.nums+=1
+                self.names.append(name)
+            try:
+                temp = temp.findNext('dd').find('a')
+                name = temp.text
+                href = temp.get('href')
+            except:
+                flag = False
+
+    def writeContent(self, textList):
+        file = open(""+self.name+".txt", 'a', encoding='utf-8')
+        for line in textList:
+            file.write(line+"\n")
+        file.close()
+    def writeTitle(self, title):
+        file = open("" + self.name + ".txt", 'a', encoding='utf-8')
+        file.write("\n\n\n"+title+"\n\n\n")
+
+    def getText(self, url):
+        textList = []
+        req = requests.get(url)
+        html = req.text
+        bf = bs(html, "lxml")
+        time.sleep(1)
+        content = bf.find("div", id = "content").find_all('p')
+        for text in content:
+            textList.append(text.text)
+        return textList
+if __name__=="__main__":
+    dl = bookDownloader()
+    dl.getDownloadUrlList()
+    for i in range(0,dl.nums):
+        list = dl.getText(dl.urls[i])
+        dl.writeTitle(dl.names[i])
+        dl.writeContent(list)
