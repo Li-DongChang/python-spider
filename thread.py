@@ -27,7 +27,7 @@ def write_charpter_name(name, title):
     file.write("\n\n\n"+title+"\n\n\n")
 #获取每一章的章节内容
 def get_content(name,url):
-    #如果发生timeout异常，则休眠2s再次尝试
+    #如果发生timeout异常，则休眠4s再次尝试
     try:
         res = requests.get(url, timeout = 40)
     except:
