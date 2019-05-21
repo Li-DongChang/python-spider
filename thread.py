@@ -4,7 +4,7 @@ from time import sleep
 
 from tornado import concurrent
 
-
+#获取所有小说的初始url
 def get_book_urls():
     target = "http://www.xbiquge.la/xiaoshuodaquan/"
     url_list = []
@@ -16,17 +16,18 @@ def get_book_urls():
         url  = item.find('a').get('href')
         url_list.append(url)
     return url_list
-
+#将每一章的内容写入对应的小说中
 def write_to_txt(name,content):
     f = open(name+'.txt', 'a', encoding='utf-8')
     f.write(content)
 
-
+#写入每一章的名称，也可将章名与章节内容连接，从而同时写入
 def write_charpter_name(name, title):
     file = open(name+'.txt', 'a', encoding='utf-8')
     file.write("\n\n\n"+title+"\n\n\n")
-
+#获取每一章的章节内容
 def get_content(name,url):
+    #如果发生timeout异常，则休眠2s再次尝试
     try:
         res = requests.get(url, timeout = 40)
     except:
@@ -39,12 +40,15 @@ def get_content(name,url):
     content = soup.find(id="content")
     [content.extract() for content in content("p")]  # 去掉内容中多余的p标签
     ####分割线###
+    #此处不知为何，利用soup.find(id = 'content').text无法直接获取所有章节内容
+    #只能将其转为字符串进行替换，如有其他方法，烦请告知
     content = str(content)  # 将其转为字符串
     con_replace = content.replace('<br/>', '\n')
     con_replace = con_replace.replace('<div id="content">', '')
     con_replace = con_replace.replace('</div>', '')
     write_charpter_name(name,title)
     write_to_txt(name,con_replace)
+#下载此url对应的小说
 def download_book(name,url):
     try:
         req = requests.get(url, timeout = 40)
@@ -61,6 +65,7 @@ def download_book(name,url):
         charpter_url = url+newstr[3]
         # print("\r"+str(index*100/len(chapter_list))+"%", end="", flush=True)
         get_content(name,charpter_url)
+#获取此url对应的书名
 def get_book_name(url):
     try:
         res = requests.get(url)
@@ -72,10 +77,10 @@ def get_book_name(url):
     soup = BeautifulSoup(html, "lxml")
     bookName = soup.find('div', attrs={'id': 'info'}).find('h1').text
     return bookName
-
+#创建txt文件
 def create_txt(name):
     f = open(name+'.txt','a', encoding='utf-8')
-
+#主方法
 if __name__ == "__main__":
     urlList = get_book_urls()
     #开启多线程，可以让所有小说同时下载
